@@ -1,2 +1,9 @@
 rootProject.name = "AdhkarApp"
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
 include(":app")
