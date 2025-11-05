@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI (Auto Wrapper)
 
 on:
   push:
@@ -19,39 +19,23 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # المشروع داخل مجلد AdhkarApp/
-      # الخطوة التالية تحاول توليد Gradle Wrapper إذا كان مفقودًا
-      - name: Generate Gradle wrapper if missing (best-effort)
+      - name: Install Gradle manually and create wrapper
         run: |
           sudo apt-get update -y
           sudo apt-get install -y wget unzip
           cd AdhkarApp
-          if [ ! -f ./gradlew ]; then
-            echo "No gradle wrapper found. Installing Gradle to generate wrapper..."
-            wget -q https://services.gradle.org/distributions/gradle-8.7-bin.zip
-            unzip -q gradle-8.7-bin.zip -d $HOME
-            export PATH="$HOME/gradle-8.7/bin:$PATH"
-            gradle --version
-            gradle wrapper || true
-            chmod +x ./gradlew || true
-          fi
-
-      - name: Make gradlew executable
-        run: |
-          cd AdhkarApp
-          if [ -f ./gradlew ]; then
-            chmod +x ./gradlew
-          fi
+          echo "Downloading Gradle..."
+          wget -q https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip -q gradle-8.7-bin.zip -d $HOME
+          export PATH="$HOME/gradle-8.7/bin:$PATH"
+          gradle wrapper
+          chmod +x ./gradlew
+          ./gradlew --version
 
       - name: Build Debug APK
         run: |
           cd AdhkarApp
-          if [ -f ./gradlew ]; then
-            ./gradlew assembleDebug --stacktrace || ./gradlew assemble
-          else
-            echo "Gradle wrapper is still missing; cannot build."
-            exit 1
-          fi
+          ./gradlew assembleDebug --stacktrace
 
       - name: Locate APKs
         id: find_apk
